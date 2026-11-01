@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+    <form action="/app/createUser" method="POST">
+            <!-- Essential security token for POST requests -->
+            {% csrf_token %}
+        <label for="user_name">User Name</label><br>
+        <input id ="user_name" name = "user_name" type = "text">
+
+        <label for="email">Email</label><br>
+        <input id="email" name="email" type="email">
+
+        <label for="password">Password</label><br>
+        <input id="password" name="password" type="password">
+
+        <fieldset>
+            <legend>Select Role:</legend>
+
+            <input type="radio" id="student" name="is_student" value="1">
+            <label for="student">Student</label><br>
+
+            <input type="radio" id="instructor" name="is_student" value="0">
+            <label for="instructor">Instructor</label>
+        </fieldset>
+        <button type="submit">Sign Up</button>
+    </form>
+</body>
+</html>

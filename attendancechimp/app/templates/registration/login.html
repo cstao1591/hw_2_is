@@ -2,6 +2,16 @@
 <html><head><title>Login</title></head>
 <body style="text-align:center; font-family:Arial;">
 <h1>Log In</h1>
+    <form action="/accounts/login/" method="POST">
+            <!-- Essential security token for POST requests -->
+            {% csrf_token %}
+        <label for="username">User Name</label><br>
+        <input id ="username" name = "username" type = "text">
 
+        <label for="password">Password</label><br>
+        <input id="password" name="password" type="password">
+
+        <button type="submit">Log In</button>
+    </form>
 </body>
 </html>
