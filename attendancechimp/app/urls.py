@@ -10,10 +10,10 @@ urlpatterns = [
     path('new', views.new, name='new'),
     path('createUser', views.createUser, name='createUser'),
     path('createLecture', views.create_Lecture, name='createLecture'),
-    path('newLecture', views.new_lecture, name='newLecture'),
-    path('newCourse', views.new_course, name='newCourse'),
+    path('new_lecture', views.new_lecture, name='new_lecture'),
+    path('new_course', views.new_course, name='new_course'),
     path('createCourse', views.create_Course, name='createCourse'),
-    path('newQRCodeUpload', views.new_qr_upload, name='new_qr_upload'),
+    path('new_qr_upload', views.new_qr_upload, name='new_qr_upload'),
     path('createQRCodeUpload', views.create_QRCodeUpload, name='createQRCodeUpload'),
     path('dumpUploads', views.dumpUploads, name='dumpUploads'),
 ]
