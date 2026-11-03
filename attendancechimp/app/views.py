@@ -16,8 +16,6 @@ import zoneinfo
 import json
 import io
 
-from attendancechimp.app.robot_models import QRUpload
-
 from .models import Course, InstructorProfile, Lecture, QRCodeUpload, StudentProfile
 
 # from .models import (InstructorProfile, StudentProfile, Course, Enrollment,
@@ -75,8 +73,13 @@ def createUser(request):
         password = request.POST.get("password")
         is_student = request.POST.get("is_student")
 
+        if not user_name or not email or not password:
+            return HttpResponse("Missing required fields", status=400)
         if User.objects.filter(email=email).exists():
             return HttpResponse("User with this email already exists", status=409)
+
+        if User.objects.filter(username=user_name).exists():
+            return HttpResponse("User with this username already exists", status=409)
 
         user = User.objects.create_user(
             username=user_name,
