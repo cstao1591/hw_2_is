@@ -13,7 +13,7 @@ urlpatterns = [
     path('newLecture', views.new_lecture, name='newLecture'),
     path('newCourse', views.new_course, name='newCourse'),
     path('createCourse', views.create_Course, name='createCourse'),
-    path('newQRCodeUpload', views.new_QRCodeUpload, name='newQRCodeUpload'),
+    path('newQRCodeUpload', views.new_qr_upload, name='new_qr_upload'),
     path('createQRCodeUpload', views.create_QRCodeUpload, name='createQRCodeUpload'),
     path('dumpUploads', views.dumpUploads, name='dumpUploads'),
 ]
