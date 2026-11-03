@@ -170,7 +170,7 @@ def create_Lecture(request):
     else:
         return HttpResponse("Something went wrong", status=405)
 
-def new_QRCodeUpload(request):
+def new_qr_upload(request):
     if request.method == "GET":
         return render(request, "app/new_qr_upload.html")
     else:
