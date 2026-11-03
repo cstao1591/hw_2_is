@@ -16,7 +16,9 @@ import zoneinfo
 import json
 import io
 
-from .models import InstructorProfile, StudentProfile
+from attendancechimp.app.robot_models import QRUpload
+
+from .models import Course, InstructorProfile, Lecture, QRCodeUpload, StudentProfile
 
 # from .models import (InstructorProfile, StudentProfile, Course, Enrollment,
 #                      Lecture, QRCodeUpload, is_instructor, is_student,
@@ -54,8 +56,6 @@ def sum_view(request):
     except ValueError:
         n2 = float(request.GET["n2"])
     return HttpResponse(f"<p>{json.dumps(n1 + n2)}</p>")
-
-
 
 # ---------------------------------------------------------------------------
 # HW4  — user creation
@@ -98,9 +98,104 @@ def createUser(request):
 # ---------------------------------------------------------------------------
 # HW5  — courses, lectures, QR uploads, dump
 # ---------------------------------------------------------------------------
+def new_course(request):
+    if request.method == "GET":
+        return render(request, 'app/new_course.html')
+    else:
+        return HttpResponse("Something went wrong", status=405)
+@csrf_exempt
+def create_Course(request):
+    if request.user.is_authenticated == False or InstructorProfile.objects.filter(user=request.user).exists() == False:
+        return HttpResponse("You are not logged in as an Instructor.", status=401)
+    if request.method == "POST":
+        course_name = request.POST.get("course-name")
+        start_time = request.POST.get("start-time")
+        end_time = request.POST.get("end-time")
+        day_mon = request.POST.get("day-mon")
+        day_tue = request.POST.get("day-tue")
+        day_wed = request.POST.get("day-wed")
+        day_thu = request.POST.get("day-thu")
+        day_fri = request.POST.get("day-fri")
 
+        days = ""
+        if day_mon:
+            days += "M"
+        if day_tue:
+            days += "T"
+        if day_wed:
+            days += "W"
+        if day_thu:
+            days += "Th"
+        if day_fri:
+            days += "F"
 
+        if days == "" or not start_time or not end_time or not course_name:
+            return HttpResponse("No meeting days selected, missing course name or start/end time", status=400)
+        if Course.objects.filter(name=course_name).exists():
+            return HttpResponse(f"Course {course_name} already exists", status=400)
+        course = Course.objects.create(
+            name=course_name,
+            start_time=start_time,
+            end_time=end_time,
+            meeting_days=days,
+            instructor=InstructorProfile.objects.get(user=request.user)
+        )
+        return HttpResponse(f"Course {course_name} created successfully", status=200)
+    else:
+        return HttpResponse("Something went wrong", status=405)
 
+def new_lecture(request):
+    if request.user.is_authenticated == False or InstructorProfile.objects.filter(user=request.user).exists() == False:
+        return HttpResponse("You are not logged in as an Instructor.", status=401)
+    courses = Course.objects.filter(instructor=InstructorProfile.objects.get(user=request.user))
+    return render(request, "app/new_lecture.html", {"courses": courses})
+
+@csrf_exempt
+def create_Lecture(request):
+    if request.user.is_authenticated == False or InstructorProfile.objects.filter(user=request.user).exists() == False:
+        return HttpResponse("You are not logged in as an Instructor.", status=401)
+    if request.method == "POST":
+        lecture_name = request.POST.get("choice")
+
+        if Course.objects.filter(name=lecture_name).exists() == False:
+            return HttpResponse(f"Course {lecture_name} does not exist", status=400)
+        lecture = Lecture.objects.create(
+            course=Course.objects.get(name=lecture_name),
+            date= datetime.now(zoneinfo.ZoneInfo("America/Chicago"))
+        )
+        return HttpResponse(f"Lecture for course {lecture_name} created successfully", status=200)
+    else:
+        return HttpResponse("Something went wrong", status=405)
+
+def new_QRCodeUpload(request):
+    if request.method == "GET":
+        return render(request, "app/new_qr_upload.html")
+    else:
+        return HttpResponse("Something went wrong", status=405)
+
+@csrf_exempt
+def create_QRCodeUpload(request):
+    if request.user.is_authenticated == False or StudentProfile.objects.filter(user=request.user).exists() == False:
+        return HttpResponse("You are not logged in as a Student.", status=401)
+    if request.method == "POST":
+        image_upload = request.FILES.get("imageUpload")
+        if image_upload:
+            qr_upload = QRCodeUpload.objects.create(
+                student=StudentProfile.objects.get(user=request.user),
+                image=image_upload
+            )
+            return HttpResponse("QR code uploaded successfully", status=200)
+        else:
+            return HttpResponse("No image uploaded", status=400)
+    else:
+        return HttpResponse("Something went wrong", status=405)
+
+def dumpUploads(request):
+    if request.user.is_authenticated == False or InstructorProfile.objects.filter(user=request.user).exists() == False:
+        return HttpResponse("You are not logged in as an Instructor.", status=401)
+    uploads = QRCodeUpload.objects.all()
+    data = [{"username": upload.student.user.username, "upload_time": upload.uploaded_at.strftime("%Y-%m-%d %H:%M:%S")} for upload in uploads]
+    return JsonResponse(data, safe=False)
 # ---------------------------------------------------------------------------
 # HW6  — getUploads
 # ---------------------------------------------------------------------------
