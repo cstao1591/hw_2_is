@@ -16,7 +16,7 @@ import zoneinfo
 import json
 import io
 
-from .models import Course, InstructorProfile, Lecture, QRCodeUpload, StudentProfile
+from .models import Course, InstructorProfile, Lecture, QRCodeUpload, StudentProfile, getUploadsForCourse
 
 # from .models import (InstructorProfile, StudentProfile, Course, Enrollment,
 #                      Lecture, QRCodeUpload, is_instructor, is_student,
@@ -203,5 +203,13 @@ def dumpUploads(request):
 # HW6  — getUploads
 # ---------------------------------------------------------------------------
 
-
+def getUploads(request):
+    if request.user.is_authenticated == False or InstructorProfile.objects.filter(user=request.user).exists() == False:
+        return HttpResponse("You are not logged in as an Instructor.", status=401)
+    course = request.GET.get("course")
+    if not course:
+        return JsonResponse({"error": "Missing course parameter"}, safe=False, status= 400)
+    uploads = getUploadsForCourse(course)
+    data = [{"username": upload.student.user.username, "upload_time": upload.uploaded_at.strftime("%Y-%m-%d %H:%M:%S")} for upload in uploads]
+    return JsonResponse(data, safe=False)
 

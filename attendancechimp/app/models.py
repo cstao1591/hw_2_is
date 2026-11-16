@@ -16,6 +16,9 @@ Entities
 - QRCodeUpload    : a student's uploaded QR-code photograph
 """
 
+import re
+
+from django.conf.locale import el
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -23,6 +26,9 @@ import logging
 import string
 import random
 import uuid
+import zoneinfo
+
+from django.http import HttpResponse
 
 logger = logging.getLogger(__name__) # set up tracking, auditing, and debugging
                                                                # allows using logger.warning(), logger.error(), 
@@ -98,5 +104,26 @@ class QRCodeUpload(models.Model):
 # Helper / API functions
 # ---------------------------------------------------------------------------
 
+week = {0:"M", 1:"T", 2:"W", 3:"R", 4:"F"}
+CDT = zoneinfo.ZoneInfo("America/Chicago")
+
+def getUploadsForCourse(course):
+    if Course.objects.filter(name=course).exists() == False:
+        return []
+    course = Course.objects.get(name=course)
+    qr_codes = QRCodeUpload.objects.filter(lecture__course=course)
+    qr_list = []
+    days = course.meeting_days
+    days = days.replace("Th", "R")
+    for qr_code in qr_codes:
+        local_time = qr_code.uploaded_at.astimezone(CDT)
+        if local_time.weekday() not in week:
+           continue
+        if week[local_time.weekday()] not in days:
+            continue
+        if local_time.time() < course.start_time or local_time.time() > course.end_time:
+            continue
+        qr_list.append(qr_code)
+    return qr_list
 
 
